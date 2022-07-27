@@ -6,13 +6,24 @@ const { proposalData } = require("./models/proposals");
 const cors = require("cors");
 const { ethers } = require("ethers");
 const { proposalDetails } = require("./models/proposalDetails");
+const bodyParser = require("body-parser");
 
 const app = express();
 app.use(cors());
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
-app.get("/api/proposalHash", async (req, res, next) => {
- const dataID = await proposalData.find();
- res.status(200).json(dataID);
+app.get("/api/proposal_hash", async (req, res, next) => {
+ const data = await proposalDetails.find();
+ const result = data.map((item) => ({
+  objId: item._id,
+  address: item.proposer_address,
+  id: item.proposal_id,
+  desc: item.proposal_description,
+  startBlock: item.startBlock,
+  endBlock: item.endBlock,
+ }));
+ res.status(200).json(result);
 
  next();
 });
@@ -20,13 +31,20 @@ app.get("/api/proposalHash", async (req, res, next) => {
 app.post("/api/create", async (req, res, next) => {
  const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com/");
 
+ // console.log(req.body.proposal_hash);
+
  const txnHash = {
-  proposal_hash: req.body,
+  proposal_hash: req.body.proposal_hash,
  };
 
  await proposalData.create(txnHash);
 
+ const dataID = await proposalData.find().limit(1).sort({ $natural: -1 });
+
+ console.log(dataID);
+
  const events = await provider.getTransactionReceipt(dataID[0].proposal_hash);
+
  const logs = events.logs[0].data;
  const decodeData = ethers.utils.defaultAbiCoder.decode(
   ["uint256", "address", "address[]", "uint256[]", "string[]", "bytes[]", "uint256", "uint256", "string"],
