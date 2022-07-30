@@ -45,44 +45,46 @@ app.post("/api/create", async (req, res, next) => {
  };
  await proposalData.create(txnHash);
 
- setTimeout(async () => {
-  try {
-   const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com/");
+ try {
+  const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com/");
 
-   const dataID = await proposalData.find().limit(1).sort({ $natural: -1 });
+  const dataID = await proposalData.find().limit(1).sort({ $natural: -1 });
 
-   const events = await provider.getTransactionReceipt(dataID[0].proposal_hash);
-   const logs = events.logs[0].data;
-   const decodeData = ethers.utils.defaultAbiCoder.decode(
-    ["uint256", "address", "address[]", "uint256[]", "string[]", "bytes[]", "uint256", "uint256", "string"],
-    logs
-   );
+  const events = await provider.getTransactionReceipt(dataID[0].proposal_hash);
+  const logs = events.logs[0].data;
+  const decodeData = ethers.utils.defaultAbiCoder.decode(
+   ["uint256", "address", "address[]", "uint256[]", "string[]", "bytes[]", "uint256", "uint256", "string"],
+   logs
+  );
 
-   const proposerAddress = decodeData[1];
-   const ID = decodeData[0].toString();
-   const desc = decodeData[8];
-   const startBlock = decodeData[6].toString();
-   const endBlock = decodeData[7].toString();
+  const proposerAddress = decodeData[1];
+  const ID = decodeData[0].toString();
+  const callDataID = decodeData[5];
+  const values = decodeData[3];
+  const targets = decodeData[2];
+  const desc = decodeData[8];
+  const startBlock = decodeData[6].toString();
+  const endBlock = decodeData[7].toString();
 
-   const ProposalData = {
-    proposer_address: proposerAddress,
-    proposal_id: ID,
-    proposal_description: desc,
-    startBlock: startBlock,
-    endBlock: endBlock,
-   };
+  const ProposalData = {
+   proposer_address: proposerAddress,
+   proposal_id: ID,
+   proposal_description: desc,
+   startBlock: startBlock,
+   endBlock: endBlock,
+   calldata: callDataID[0],
+   values: values[0],
+   targetContract: targets[0],
+  };
 
-   const result = await proposalDetails.create(ProposalData);
-   console.log(result);
-   res.status(200).send("Proposal hash has been stored to DB");
-  } catch (error) {
-   res.status(500).send(error);
-   next();
-  }
- }, 2000);
+  const result = await proposalDetails.create(ProposalData);
+  console.log(result);
+  res.status(200).send("Proposal hash has been stored to DB");
+ } catch (error) {
+  res.status(500).send(error);
+  next();
+ }
 });
-
-const getLogs = async () => {};
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {

@@ -21,6 +21,18 @@ const proposalDetailsSchema = new mongoose.Schema({
   type: Number,
   required: true,
  },
+ calldata: {
+  type: String,
+  required: true,
+ },
+ values: {
+  type: String,
+  required: true,
+ },
+ targetContract: {
+  type: String,
+  required: true,
+ },
 });
 
 const proposalDetails = mongoose.model("PROPOSAL-DETAILS", proposalDetailsSchema);
