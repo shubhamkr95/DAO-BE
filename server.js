@@ -40,47 +40,49 @@ app.get("/api/views/:id", async (req, res, next) => {
 // ============================================================================================================
 
 app.post("/api/create", async (req, res, next) => {
- try {
-  const txnHash = {
-   proposal_hash: req.body.hash,
-  };
-  await proposalData.create(txnHash);
+ const txnHash = {
+  proposal_hash: req.body.hash,
+ };
+ await proposalData.create(txnHash);
 
-  // setTimeout(async () => {
-  const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com/");
+ setTimeout(async () => {
+  try {
+   const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com/");
 
-  const dataID = await proposalData.find().limit(1).sort({ $natural: -1 });
+   const dataID = await proposalData.find().limit(1).sort({ $natural: -1 });
 
-  const events = await provider.getTransactionReceipt(dataID[0].proposal_hash);
-  const logs = events.logs[0].data;
-  const decodeData = ethers.utils.defaultAbiCoder.decode(
-   ["uint256", "address", "address[]", "uint256[]", "string[]", "bytes[]", "uint256", "uint256", "string"],
-   logs
-  );
+   const events = await provider.getTransactionReceipt(dataID[0].proposal_hash);
+   const logs = events.logs[0].data;
+   const decodeData = ethers.utils.defaultAbiCoder.decode(
+    ["uint256", "address", "address[]", "uint256[]", "string[]", "bytes[]", "uint256", "uint256", "string"],
+    logs
+   );
 
-  const proposerAddress = decodeData[1];
-  const ID = decodeData[0].toString();
-  const desc = decodeData[8];
-  const startBlock = decodeData[6].toString();
-  const endBlock = decodeData[7].toString();
+   const proposerAddress = decodeData[1];
+   const ID = decodeData[0].toString();
+   const desc = decodeData[8];
+   const startBlock = decodeData[6].toString();
+   const endBlock = decodeData[7].toString();
 
-  const ProposalData = {
-   proposer_address: proposerAddress,
-   proposal_id: ID,
-   proposal_description: desc,
-   startBlock: startBlock,
-   endBlock: endBlock,
-  };
+   const ProposalData = {
+    proposer_address: proposerAddress,
+    proposal_id: ID,
+    proposal_description: desc,
+    startBlock: startBlock,
+    endBlock: endBlock,
+   };
 
-  await proposalDetails.create(ProposalData);
-  res.status(200).send("Proposal hash has been stored to DB");
-  // }, 2000);
- } catch (error) {
-  res.status(500).send(error);
- }
-
- next();
+   const result = await proposalDetails.create(ProposalData);
+   console.log(result);
+   res.status(200).send("Proposal hash has been stored to DB");
+  } catch (error) {
+   res.status(500).send(error);
+   next();
+  }
+ }, 2000);
 });
+
+const getLogs = async () => {};
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
