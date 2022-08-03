@@ -8,6 +8,7 @@ const { ethers } = require("ethers");
 const { proposalDetails } = require("./models/proposalDetails");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const { treasuryData } = require("./models/treasuryTxn");
 
 const app = express();
 app.use(cors());
@@ -46,7 +47,8 @@ app.post("/api/create", async (req, res, next) => {
  await proposalData.create(txnHash);
 
  try {
-  const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com/");
+  const infuraAPI = process.env.INFURA_API;
+  const provider = new ethers.providers.JsonRpcProvider(`https://rinkeby.infura.io/v3/${infuraAPI}`);
 
   const dataID = await proposalData.find().limit(1).sort({ $natural: -1 });
 
@@ -84,6 +86,29 @@ app.post("/api/create", async (req, res, next) => {
   res.status(500).send(error);
   next();
  }
+});
+// =================================================================================
+app.post("/api/treasury", async (req, res, next) => {
+ try {
+  const txnHash = {
+   treasury_hash: req.body.hash,
+  };
+  await treasuryData.create(txnHash);
+  res.status(200).send("Deposit successfully");
+ } catch (error) {
+  res.status(500).send(error);
+ }
+ next();
+});
+// =====================================================================
+app.get("/api/transactions", async (req, res, next) => {
+ const data = await treasuryData.find();
+ const result = data.map((item) => ({
+  objId: item.id,
+  hash: item.treasury_hash,
+ }));
+ res.status(200).json(result);
+ next();
 });
 
 const port = process.env.PORT || 5000;
