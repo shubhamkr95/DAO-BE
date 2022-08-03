@@ -18,3 +18,15 @@ INFURA_API=
 /api/treasury
 /api/transactions
 ```
+
+# Installations
+
+```
+git clone https://github.com/shubhamkr95/DAO-BE.git
+
+cd DAO-BE
+
+npm install
+
+npm start
+```
