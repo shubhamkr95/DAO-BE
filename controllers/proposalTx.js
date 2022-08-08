@@ -23,7 +23,8 @@ const getProposalDetails = async (req, res, next) => {
   const result = await proposalDetails.findById(objId);
   res.status(200).json(result);
  } catch (error) {
-  console.log(error);
+  res.status(500).send(error);
+  next();
  }
 };
 
