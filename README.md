@@ -12,11 +12,11 @@ INFURA_API=
 # Api routes
 
 ```
-/api/
-/api/create/
-/api/views/:id
-/api/treasury
-/api/transactions
+https://still-everglades-35996.herokuapp.com/api/
+https://still-everglades-35996.herokuapp.com/api/create/
+https://still-everglades-35996.herokuapp.com/api/views/:id
+https://still-everglades-35996.herokuapp.com/api/treasury
+https://still-everglades-35996.herokuapp.com/api/transactions
 ```
 
 # Installations
