@@ -4,16 +4,21 @@ const { proposalDetails } = require("../models/proposalDetails");
 const mongoose = require("mongoose");
 
 const getProposal = async (req, res, next) => {
- const data = await proposalDetails.find();
- const result = data.map((item) => ({
-  objId: item._id,
-  address: item.proposer_address,
-  id: item.proposal_id,
-  desc: item.proposal_description,
-  startBlock: item.startBlock,
-  endBlock: item.endBlock,
- }));
- res.status(200).json(result);
+ const data = await proposalDetails.find().sort({ _id: -1 }).limit(4);
+ try {
+  const result = data.map((item) => ({
+   objId: item._id,
+   address: item.proposer_address,
+   id: item.proposal_id,
+   desc: item.proposal_description,
+   startBlock: item.startBlock,
+   endBlock: item.endBlock,
+  }));
+  res.status(200).json(result);
+ } catch (error) {
+  res.status(404);
+  console.error(error);
+ }
  next();
 };
 
